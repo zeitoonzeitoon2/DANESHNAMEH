@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>مثال Cytoscape</title>
+  <script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+  <style>
+    #graph {
+      width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>مثال ساده گراف با Cytoscape</h2>
+  <div id="graph"></div>
+
+  <script>
+    const cy = cytoscape({
+      container: document.getElementById('graph'),
+
+      elements: [
+        { data: { id: 'a' } },
+        { data: { id: 'b' } },
+        { data: { id: 'c' } },
+        { data: { id: 'ab', source: 'a', target: 'b' } },
+        { data: { id: 'ac', source: 'a', target: 'c' } }
+      ],
+
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': '#0077cc',
+            'label': 'data(id)'
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 3,
+            'line-color': '#ccc'
+          }
+        }
+      ],
+
+      layout: {
+        name: 'breadthfirst', // شکل درختی
+        directed: true
+      }
+    });
+  </script>
+</body>
+</html>

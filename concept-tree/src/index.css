@@ -1,0 +1,153 @@
+/*
+  این فایل CSS شامل استایل‌های پایه برای کل برنامه و استایل‌های اختصاصی فلش‌کارت است.
+  لطفاً این کد را به صورت کامل جایگزین محتوای فعلی فایل index.css کنید.
+*/
+
+/* استایل‌های عمومی که توسط Vite ایجاد می‌شوند */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #535bf2;
+}
+
+/* **اصلاح مهم:**
+  این استایل‌ها تضمین می‌کنند که `html`, `body` و `#root`
+  کل فضای قابل مشاهده مرورگر (viewport) را بپوشانند.
+  این برای رندر صحیح `ReactFlow` ضروری است.
+*/
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 320px;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* ---------------------------------------------------- */
+/* استایل‌های اختصاصی برای پروژه شما */
+/* ---------------------------------------------------- */
+
+/* استایل‌های `ReactFlow` */
+.react-flow__controls,
+.react-flow__minimap {
+  z-index: 1001;
+}
+
+/* این کلاس مطمئن می‌شود که کانتینر `ReactFlow` فضای کامل را اشغال می‌کند */
+.flow-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* استایل‌های فلش‌کارت */
+.flashcard-content {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 300px;
+  min-width: 250px;
+  text-align: right;
+  direction: rtl;
+  position: relative;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.flashcard-content h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.flashcard-content p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.flashcard-content a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.flashcard-content a:hover {
+  text-decoration: underline;
+}
