@@ -21,12 +21,7 @@ import "./styles.css";
 
 // --- Firebase Initialization (Using a separate firebase.js file) ---
 // Note: This code assumes you have a src/firebase.js file that initializes
-// Firebase and exports the 'db' instance.
-// const app = initializeApp(firebaseConfig);
-// const db = getFirestore(app);
-// Instead, we will initialize it here based on Canvas environment variables
-// and export it from this file.
-
+// Firebase and exports the 'db' and 'auth' instances.
 const firebaseConfig = typeof __firebase_config !== 'undefined'
   ? JSON.parse(__firebase_config)
   : {
@@ -63,7 +58,7 @@ const initialNodes = [
 
 function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesState] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
