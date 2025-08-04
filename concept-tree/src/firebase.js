@@ -1,9 +1,10 @@
 // src/firebase.js
 
 // Firebase SDK را برای برنامه وب اولیه سازی می کند
-// و Firestore Database را ایمپورت می کند.
 import { initializeApp } from "firebase/app";
+// Firestore Database و Authentication را ایمپورت می کند.
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
 
 // اطلاعات پیکربندی پروژه Firebase شما.
 // این اطلاعات را از کنسول Firebase خود کپی کنید.
@@ -20,9 +21,9 @@ const firebaseConfig = {
 // برنامه Firebase را با اطلاعات پیکربندی شما اولیه سازی می کند.
 const app = initializeApp(firebaseConfig);
 
-// سرویس Firestore Database را از برنامه Firebase دریافت می کند.
+// سرویس های Firestore Database و Authentication را دریافت می کند.
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// سرویس 'db' (پایگاه داده) را export می کند تا در سایر فایل های پروژه قابل استفاده باشد.
-export { db };
-
+// سرویس های 'db' و 'auth' را برای استفاده در سایر فایل ها export می کند.
+export { db, auth };

@@ -11,31 +11,18 @@ import ReactFlow, {
   MiniMap,
   Background,
 } from "reactflow";
-import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+import { onSnapshot, doc, setDoc } from "firebase/firestore";
 
 import "reactflow/dist/style.css";
 import Flashcard from "./Flashcard";
 import CustomNode from "./CustomNode";
 import "./styles.css";
 
-// --- Firebase Initialization (Using a separate firebase.js file) ---
-// Note: This code assumes you have a src/firebase.js file that initializes
-// Firebase and exports the 'db' and 'auth' instances.
-const firebaseConfig = typeof __firebase_config !== 'undefined'
-  ? JSON.parse(__firebase_config)
-  : {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+// --- Firebase Initialization ---
+// db و auth را از فایل پیکربندی Firebase ایمپورت می کنیم.
+// تمام مراحل اولیه سازی در آن فایل انجام شده است.
+import { db, auth } from './firebase';
+import { signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 
 // تعریف نوع گره سفارشی
@@ -205,7 +192,7 @@ function FlowEditor() {
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesState}
+        onEdgesChange={onEdgesChange} // onEdgesState را به onEdgesChange تغییر دادم
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
