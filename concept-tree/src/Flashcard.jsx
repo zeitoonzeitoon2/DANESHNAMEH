@@ -1,120 +1,143 @@
 // src/Flashcard.jsx
-import React, { useState, useMemo } from "react";
 
-export default function Flashcard({ data, onChange, onClose, allNodes, currentNodeId }) {
-  const [label, setLabel] = useState(data.label || "");
-  const [descriptions, setDescriptions] = useState(data.descriptions || []);
-  const [linkedNodes, setLinkedNodes] = useState(data.linkedNodes || []);
-  const [linkTarget, setLinkTarget] = useState("");
+import React, { useState, useCallback } from "react";
+import { Handle, Position } from "reactflow";
 
-  const handleDataChange = (newData) => {
-    onChange({
-      label,
-      descriptions,
-      linkedNodes,
-      ...newData,
-    });
-  };
+const Flashcard = ({ data, onChange, onClose, allNodes, currentNodeId, onLinkClick }) => {
+  // state for managing new description text
+  const [newDescriptionText, setNewDescriptionText] = useState('');
 
-  const handleLabelChange = (e) => {
-    setLabel(e.target.value);
-    handleDataChange({ label: e.target.value });
-  };
+  // updates the node's label
+  const handleLabelChange = useCallback((e) => {
+    onChange({ label: e.target.value });
+  }, [onChange]);
 
-  const handleDescriptionChange = (id, field, value) => {
-    const newDescriptions = descriptions.map(desc => 
-      desc.id === id ? { ...desc, [field]: value } : desc
+  // updates the description text
+  const handleDescriptionChange = useCallback((e, descId) => {
+    const newDescriptions = data.descriptions.map(desc =>
+      desc.id === descId ? { ...desc, text: e.target.value } : desc
     );
-    setDescriptions(newDescriptions);
-    handleDataChange({ descriptions: newDescriptions });
-  };
+    onChange({ descriptions: newDescriptions });
+  }, [data.descriptions, onChange]);
 
-  const addDescription = () => {
-    const newDescriptions = [...descriptions, { id: Date.now(), text: '', link: '' }];
-    setDescriptions(newDescriptions);
-    handleDataChange({ descriptions: newDescriptions });
-  };
-
-  const removeDescription = (id) => {
-    const newDescriptions = descriptions.filter(desc => desc.id !== id);
-    setDescriptions(newDescriptions);
-    handleDataChange({ descriptions: newDescriptions });
-  };
-
-  const linkOptions = useMemo(() => {
-    const existingLinks = new Set(linkedNodes);
-    return allNodes.filter(node => node.id !== currentNodeId && !existingLinks.has(node.id));
-  }, [allNodes, currentNodeId, linkedNodes]);
-
-  const handleAddLink = () => {
-    if (linkTarget && !linkedNodes.includes(linkTarget)) {
-      const newLinkedNodes = [...linkedNodes, linkTarget];
-      setLinkedNodes(newLinkedNodes);
-      handleDataChange({ linkedNodes: newLinkedNodes });
-      setLinkTarget("");
+  // adds a new description and link
+  const handleAddDescription = useCallback(() => {
+    if (newDescriptionText.trim() !== '') {
+      const newDescriptions = [...data.descriptions, { id: Date.now(), text: newDescriptionText, link: '' }];
+      onChange({ descriptions: newDescriptions });
+      setNewDescriptionText('');
     }
-  };
+  }, [newDescriptionText, data.descriptions, onChange]);
 
-  const handleRemoveLink = (nodeIdToRemove) => {
-    const newLinkedNodes = linkedNodes.filter(id => id !== nodeIdToRemove);
-    setLinkedNodes(newLinkedNodes);
-    handleDataChange({ linkedNodes: newLinkedNodes });
-  };
+  // removes a description and link
+  const handleRemoveDescription = useCallback((descId) => {
+    const newDescriptions = data.descriptions.filter(desc => desc.id !== descId);
+    onChange({ descriptions: newDescriptions });
+  }, [data.descriptions, onChange]);
 
-  const getNodeLabel = (nodeId) => allNodes.find(n => n.id === nodeId)?.data.label || `گره ${nodeId}`;
+  // updates the linked nodes list
+  const handleLinkedNodeChange = useCallback((e) => {
+    const selectedNodeId = e.target.value;
+    const newLinkedNodes = [...data.linkedNodes];
+    if (!newLinkedNodes.includes(selectedNodeId) && selectedNodeId !== '') {
+      newLinkedNodes.push(selectedNodeId);
+    }
+    onChange({ linkedNodes: newLinkedNodes });
+  }, [data.linkedNodes, onChange]);
+
+  // removes a linked node
+  const handleRemoveLinkedNode = useCallback((nodeId) => {
+    const newLinkedNodes = data.linkedNodes.filter(id => id !== nodeId);
+    onChange({ linkedNodes: newLinkedNodes });
+  }, [data.linkedNodes, onChange]);
+
+  // filters out the current node from the list of all nodes
+  const availableNodes = allNodes.filter(node => node.id !== currentNodeId);
 
   return (
     <div className="flashcard-container">
-      <div className="flashcard-header">
-        <strong>ویرایش گره</strong>
-        <button onClick={onClose} className="flashcard-close-button">✕</button>
-      </div>
+      <button onClick={onClose} className="flashcard-close-button">×</button>
+      <div className="p-4">
+        <label className="flashcard-label">
+          عنوان:
+          <input
+            type="text"
+            value={data.label}
+            onChange={handleLabelChange}
+            className="flashcard-input mt-2"
+          />
+        </label>
+        
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold mb-2">توضیحات و لینک‌ها</h3>
+          {data.descriptions.map((desc) => (
+            <div key={desc.id} className="mb-2 p-2 bg-slate-700 rounded-md flex items-start">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault(); // prevents default link behavior
+                  onLinkClick(desc.id, desc.text);
+                }}
+                className="w-full text-blue-400 hover:text-blue-200 underline cursor-pointer transition-colors duration-200 text-sm p-2"
+              >
+                {desc.text}
+              </a>
+              <button
+                onClick={() => handleRemoveDescription(desc.id)}
+                className="ml-2 mt-1 text-red-500 hover:text-red-700 transition-colors duration-200"
+              >
+                حذف
+              </button>
+            </div>
+          ))}
 
-      <div className="flashcard-section">
-        <label>نام گره</label>
-        <input value={label} onChange={handleLabelChange} placeholder="نام گره را وارد کنید" />
-      </div>
-
-      <div className="flashcard-section">
-        <label>توضیحات</label>
-        {descriptions.map((desc, index) => (
-          <div key={desc.id} className="description-block">
-            <textarea
-              value={desc.text}
-              onChange={(e) => handleDescriptionChange(desc.id, 'text', e.target.value)}
-              placeholder={`توضیحات ${index + 1}`}
-            />
+          <div className="flex items-center mt-2">
             <input
-              value={desc.link}
-              onChange={(e) => handleDescriptionChange(desc.id, 'link', e.target.value)}
-              placeholder="لینک منبع (اختیاری)"
+              type="text"
+              value={newDescriptionText}
+              onChange={(e) => setNewDescriptionText(e.target.value)}
+              placeholder="توضیح جدید..."
+              className="w-full flashcard-input"
             />
-            <button onClick={() => removeDescription(desc.id)} className="remove-desc-button">حذف</button>
+            <button onClick={handleAddDescription} className="ml-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+              افزودن
+            </button>
           </div>
-        ))}
-        <button onClick={addDescription} className="add-desc-button">افزودن توضیحات</button>
-      </div>
+        </div>
 
-      <div className="flashcard-section">
-        <label>لینک به گره دیگر</label>
-        <div className="link-controls">
-          <select value={linkTarget} onChange={(e) => setLinkTarget(e.target.value)}>
-            <option value="">یک گره را انتخاب کنید...</option>
-            {linkOptions.map(node => (
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold mb-2">گره‌های مرتبط</h3>
+          {data.linkedNodes.map((linkedNodeId) => {
+            const linkedNode = allNodes.find(n => n.id === linkedNodeId);
+            return linkedNode ? (
+              <div key={linkedNodeId} className="flex items-center mb-2">
+                <span className="flex-grow">{linkedNode.data.label}</span>
+                <button
+                  onClick={() => handleRemoveLinkedNode(linkedNodeId)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  حذف
+                </button>
+              </div>
+            ) : null;
+          })}
+          <select
+            onChange={handleLinkedNodeChange}
+            className="w-full flashcard-input"
+            value="" // Reset select value after selection
+          >
+            <option value="" disabled>افزودن گره مرتبط</option>
+            {availableNodes.map(node => (
               <option key={node.id} value={node.id}>{node.data.label}</option>
             ))}
           </select>
-          <button onClick={handleAddLink} disabled={!linkTarget}>افزودن</button>
-        </div>
-        <div className="link-list">
-          {linkedNodes.map(nodeId => (
-            <div key={nodeId} className="link-item">
-              <span>{getNodeLabel(nodeId)}</span>
-              <button onClick={() => handleRemoveLink(nodeId)}>✕</button>
-            </div>
-          ))}
         </div>
       </div>
+
+      <Handle type="source" position={Position.Right} id="a" />
+      <Handle type="target" position={Position.Left} id="b" />
     </div>
   );
-}
+};
+
+export default Flashcard;
