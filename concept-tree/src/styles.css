@@ -1,16 +1,23 @@
 /* src/styles.css */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #f0f0f0;
+  background: #f8f9fa;
   direction: rtl;
+  color: #343a40;
 }
 
-/* --- New Styles for Control Buttons --- */
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: #6c757d;
+}
+
 .top-bar-controls {
   position: absolute;
   top: 15px;
@@ -18,11 +25,6 @@ body {
   z-index: 10;
   display: flex;
   gap: 10px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 8px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  backdrop-filter: blur(5px);
 }
 
 .control-button {
@@ -30,47 +32,51 @@ body {
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
+  font-family: inherit;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.control-button.add-node {
-  background: #1a73e8;
-  color: #fff;
-}
-.control-button.add-node:hover {
-  background: #1765c7;
-}
+.control-button.add-node { background: #007bff; color: #fff; }
+.control-button.save { background: #28a745; color: #fff; }
 
-.control-button.save {
-  background: #28a745;
-  color: #fff;
-}
-.control-button.save:hover {
-  background: #218838;
-}
-
-.control-button.export {
-  background: #ffc107;
-  color: #212529;
-}
-.control-button.export:hover {
-  background: #e0a800;
-}
-
-
-/* --- Flashcard Styles --- */
-.flashcard-container {
-  width: 280px;
+/* --- Custom Node Styles --- */
+.react-flow__node-custom {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-width: 120px;
+}
+
+/* --- Flashcard Panel --- */
+.flashcard-panel {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+  width: 320px;
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.flashcard-container {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 .flashcard-header {
@@ -78,111 +84,113 @@ body {
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
-  color: #333;
+  font-size: 1.1rem;
+  color: #212529;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .flashcard-close-button {
   background: transparent;
   border: none;
-  font-size: 20px;
-  color: #999;
+  font-size: 24px;
+  color: #adb5bd;
   cursor: pointer;
   padding: 0;
   line-height: 1;
 }
-.flashcard-close-button:hover {
-  color: #333;
-}
+.flashcard-close-button:hover { color: #495057; }
 
-.flashcard-input,
-.flashcard-textarea {
-  font-family: inherit;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  padding: 8px;
-  border-radius: 6px;
-  box-sizing: border-box;
-  width: 100%;
-  transition: border-color 0.2s;
-}
-
-.flashcard-input:focus,
-.flashcard-textarea:focus {
-  outline: none;
-  border-color: #1a73e8;
-}
-
-.flashcard-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-/* --- Link Section Styles --- */
-.link-section {
-  border-top: 1px solid #eee;
-  padding-top: 12px;
+.flashcard-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.link-section strong {
-  font-size: 13px;
-  color: #555;
-}
-
-.link-controls {
-  display: flex;
   gap: 8px;
 }
 
-.link-select {
-  flex-grow: 1;
-  font-family: inherit;
-  font-size: 13px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.flashcard-section label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #495057;
 }
 
-.link-add-button {
-  padding: 6px 12px;
-  font-size: 13px;
+.flashcard-section input,
+.flashcard-section textarea,
+.flashcard-section select {
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.flashcard-section input:focus,
+.flashcard-section textarea:focus,
+.flashcard-section select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.description-block {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.remove-desc-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.add-desc-button {
+  background: #e9ecef;
+  border: 1px dashed #ced4da;
+  color: #495057;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.link-controls { display: flex; gap: 8px; }
+.link-controls select { flex-grow: 1; }
+.link-controls button {
   background: #28a745;
   color: white;
   border: none;
   border-radius: 6px;
+  padding: 0 12px;
   cursor: pointer;
 }
-.link-add-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
+.link-controls button:disabled { background: #6c757d; }
 
-.link-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 100px;
-  overflow-y: auto;
-}
-
+.link-list { display: flex; flex-direction: column; gap: 6px; }
 .link-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f1f3f4;
+  background: #e9ecef;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 13px;
 }
-
-.link-remove-button {
+.link-item button {
   background: transparent;
   border: none;
-  color: #d9534f;
+  color: #dc3545;
   font-size: 16px;
   cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
 }

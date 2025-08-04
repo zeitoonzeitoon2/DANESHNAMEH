@@ -1,4 +1,5 @@
 // src/App.jsx
+
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import ReactFlow, {
   ReactFlowProvider,
@@ -10,99 +11,161 @@ import ReactFlow, {
   MiniMap,
   Background,
 } from "reactflow";
+import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot } from "firebase/firestore";
+
 import "reactflow/dist/style.css";
 import Flashcard from "./Flashcard";
+import CustomNode from "./CustomNode";
 import "./styles.css";
+
+// --- Firebase Initialization (Using a separate firebase.js file) ---
+// Note: This code assumes you have a src/firebase.js file that initializes
+// Firebase and exports the 'db' instance.
+// const app = initializeApp(firebaseConfig);
+// const db = getFirestore(app);
+// Instead, we will initialize it here based on Canvas environment variables
+// and export it from this file.
+
+const firebaseConfig = typeof __firebase_config !== 'undefined'
+  ? JSON.parse(__firebase_config)
+  : {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+// تعریف نوع گره سفارشی
+const nodeTypes = {
+  custom: CustomNode,
+};
 
 const initialNodes = [
   {
     id: "1",
-    position: { x: 200, y: 200 },
-    data: { label: "گره ۱", title: "عنوان ۱", text: "توضیحات ۱", linkedNodes: [] },
+    type: 'custom',
+    position: { x: 250, y: 150 },
+    data: { 
+      label: "گره اصلی", 
+      descriptions: [{ id: Date.now(), text: 'این یک توضیح است.', link: 'https://reactflow.dev' }],
+      linkedNodes: [] 
+    },
   },
 ];
 
-// خطای شما به دلیل نبودن این خط بود
-const initialEdges = [];
-
-const LOCAL_STORAGE_KEY = "react-flow-graph-data";
-
 function FlowEditor() {
-  const reactFlowWrapper = useRef(null);
-  const { project, getViewport } = useReactFlow();
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesState] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [cardPosition, setCardPosition] = useState({ left: 0, top: 0 });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // --- توابع جدید برای ذخیره و بارگذاری ---
+  const reactFlowWrapper = useRef(null);
+  const { setViewport } = useReactFlow();
 
-  const handleSave = useCallback(() => {
-    const flowData = { nodes, edges };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(flowData));
-    alert("نمودار با موفقیت ذخیره شد!"); // یا یک نوتیفیکیشن بهتر
-  }, [nodes, edges]);
-
-  const handleLoad = useCallback(() => {
-    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedData) {
-      const flowData = JSON.parse(savedData);
-      setNodes(flowData.nodes || []);
-      setEdges(flowData.edges || []);
-      console.log("داده‌های ذخیره شده با موفقیت بارگذاری شد.");
-    }
-  }, [setNodes, setEdges]);
-
-  const handleExport = useCallback(() => {
-    const flowData = { nodes, edges };
-    const jsonString = JSON.stringify(flowData, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "graph-submission.json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [nodes, edges]);
-
-  // بارگذاری خودکار داده‌ها هنگام شروع برنامه
+  // --- Firebase Authentication & Data Sync ---
   useEffect(() => {
-    handleLoad();
-  }, [handleLoad]);
-
-
-  // --- توابع قبلی ---
-
-  const updateCardPosition = useCallback((node) => {
-    if (!reactFlowWrapper.current || !node) return;
-    const viewport = getViewport();
-    const nodeScreenPos = {
-      x: node.position.x * viewport.zoom + viewport.x,
-      y: node.position.y * viewport.zoom + viewport.y,
+    // 1. Initialise and Authenticate Firebase
+    const initializeFirebase = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined') {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("Firebase authentication failed:", error);
+      }
     };
-    setCardPosition({
-      left: nodeScreenPos.x + (node.width || 150) * viewport.zoom + 15,
-      top: nodeScreenPos.y,
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        setIsAuthReady(true);
+        console.log("Firebase auth state changed. User ID:", user.uid);
+      } else {
+        setUserId(null);
+        setIsAuthReady(true);
+        console.log("Firebase auth state changed. No user logged in.");
+      }
     });
-  }, [getViewport]);
+
+    initializeFirebase();
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // 2. Fetch data from Firestore after authentication is ready
+  useEffect(() => {
+    if (!isAuthReady || !userId) return;
+
+    // شناسه داکیومنتی که داده‌ها در آن ذخیره می‌شود
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // Path for multi-user data storage
+    const docRef = doc(db, `artifacts/${appId}/users/${userId}/graphs/graphData`);
+
+    const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        const flowData = doc.data();
+        setNodes(flowData.nodes || initialNodes);
+        setEdges(flowData.edges || []);
+        console.log("Graph data loaded from Firestore.");
+      } else {
+        // اگر داکیومنتی وجود نداشت، از داده‌های اولیه استفاده کن
+        setNodes(initialNodes);
+        setEdges([]);
+        console.log("No existing document, using initial data.");
+      }
+      setIsDataLoaded(true);
+    });
+
+    // پاکسازی شنود هنگام خروج از کامپوننت
+    return () => unsubscribeSnapshot();
+  }, [isAuthReady, userId, setNodes, setEdges]);
+
+  const handleSave = useCallback(async () => {
+    if (!isAuthReady || !userId) {
+      console.error("Firebase is not ready. Cannot save.");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      const docRef = doc(db, `artifacts/${appId}/users/${userId}/graphs/graphData`);
+      const flowData = { nodes, edges };
+      await setDoc(docRef, flowData);
+      console.log("Graph saved to Firestore!");
+    } catch (error) {
+      console.error("Error saving graph: ", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [nodes, edges, isAuthReady, userId]);
 
   const onNodeClick = useCallback((event, node) => {
     setSelectedNode(node);
-    updateCardPosition(node);
-  }, [updateCardPosition]);
+  }, []);
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
   }, []);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#555' } }, eds)),
     [setEdges]
   );
-
+  
   const updateNodeData = useCallback((id, newData) => {
     setNodes((nds) =>
       nds.map((n) =>
@@ -116,51 +179,51 @@ function FlowEditor() {
     const id = String(Date.now());
     const newNode = {
       id,
-      position: { x: Math.random() * 400, y: Math.random() * 300 },
-      data: { label: `گره ${id.slice(-2)}`, title: "", text: "", linkedNodes: [] },
+      type: 'custom',
+      position: {
+        x: Math.random() * 400,
+        y: Math.random() * 300,
+      },
+      data: {
+        label: "گره جدید",
+        descriptions: [{ id: Date.now(), text: '', link: '' }],
+        linkedNodes: [],
+      },
     };
     setNodes((nds) => [...nds, newNode]);
   }, [setNodes]);
 
-  const onMove = useCallback(() => {
-      if(selectedNode) {
-          updateCardPosition(selectedNode);
-      }
-  }, [selectedNode, updateCardPosition]);
+  if (!isAuthReady || !isDataLoaded) {
+    return <div className="loading-screen">در حال بارگذاری نمودار...</div>;
+  }
 
   return (
-    <div ref={reactFlowWrapper} style={{ width: "100vw", height: "100vh", position: "relative" }}>
+    <div ref={reactFlowWrapper} style={{ width: "100vw", height: "100vh" }}>
       <div className="top-bar-controls">
         <button onClick={addNode} className="control-button add-node">افزودن گره</button>
-        <button onClick={handleSave} className="control-button save">ذخیره</button>
-        <button onClick={handleExport} className="control-button export">ارسال برای بررسی (Export)</button>
+        <button onClick={handleSave} className="control-button save" disabled={isSaving}>
+          {isSaving ? 'در حال ذخیره...' : 'ذخیره در سرور'}
+        </button>
       </div>
-
+      
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onEdgesChange={onEdgesState}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
-        onMove={onMove}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Controls />
-        <MiniMap />
+        <MiniMap nodeStrokeWidth={3} zoomable pannable />
         <Background />
       </ReactFlow>
 
       {selectedNode && (
-        <div
-          style={{
-            position: "absolute",
-            top: cardPosition.top,
-            left: cardPosition.left,
-            zIndex: 10,
-          }}
-        >
+        <div className="flashcard-panel">
           <Flashcard
             key={selectedNode.id}
             data={selectedNode.data}
