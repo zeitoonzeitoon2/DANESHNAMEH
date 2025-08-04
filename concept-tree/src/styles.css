@@ -1,196 +1,97 @@
-/* src/styles.css */
-body {
-  margin: 0;
-  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  background: #f8f9fa;
-  direction: rtl;
-  color: #343a40;
+/* ... (تمام استایل‌های قبلی) ... */
+
+/* --- Article Page Styles --- */
+.article-page-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
-.loading-screen {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.5rem;
-  color: #6c757d;
-}
-
-.top-bar-controls {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  z-index: 10;
-  display: flex;
-  gap: 10px;
-}
-
-.control-button {
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.control-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.control-button.add-node { background: #007bff; color: #fff; }
-.control-button.save { background: #28a745; color: #fff; }
-
-/* --- Custom Node Styles --- */
-.react-flow__node-custom {
-  background: #fff;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  min-width: 120px;
-}
-
-/* --- Flashcard Panel --- */
-.flashcard-panel {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 10;
-  width: 320px;
-  max-height: calc(100vh - 30px);
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-}
-
-.flashcard-container {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.flashcard-header {
+.article-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #212529;
-  padding-bottom: 10px;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid #e9ecef;
 }
 
-.flashcard-close-button {
-  background: transparent;
+.article-toolbar button {
+  background: #007bff;
+  color: white;
   border: none;
-  font-size: 24px;
-  color: #adb5bd;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.article-toolbar button:first-child {
+  background: #6c757d;
+}
+
+.article-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  min-height: 50vh;
+}
+
+.article-editor {
+  width: 100%;
+  height: 60vh;
+  border: none;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.article-editor:focus {
+  outline: none;
+}
+
+.markdown-preview {
+  line-height: 1.7;
+}
+.markdown-preview h1, .markdown-preview h2 {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+.markdown-preview a {
+  color: #007bff;
+}
+
+/* --- Flashcard Link Button --- */
+.description-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.article-link-button {
+  background: none;
+  border: none;
+  color: #007bff;
   cursor: pointer;
   padding: 0;
-  line-height: 1;
-}
-.flashcard-close-button:hover { color: #495057; }
-
-.flashcard-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.flashcard-section label {
+  font-size: 0.85rem;
   font-weight: 500;
-  font-size: 0.9rem;
-  color: #495057;
 }
-
-.flashcard-section input,
-.flashcard-section textarea,
-.flashcard-section select {
-  font-family: inherit;
-  font-size: 14px;
-  border: 1px solid #ced4da;
-  padding: 8px 12px;
-  border-radius: 6px;
-  width: 100%;
-  box-sizing: border-box;
-}
-.flashcard-section input:focus,
-.flashcard-section textarea:focus,
-.flashcard-section select:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-}
-
-.description-block {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
+.article-link-button:hover {
+  text-decoration: underline;
 }
 
 .remove-desc-button {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: #dc3545;
-  color: white;
-  border: none;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
   border-radius: 4px;
   font-size: 12px;
   padding: 4px 8px;
   cursor: pointer;
 }
 
-.add-desc-button {
-  background: #e9ecef;
-  border: 1px dashed #ced4da;
-  color: #495057;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.link-controls { display: flex; gap: 8px; }
-.link-controls select { flex-grow: 1; }
-.link-controls button {
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0 12px;
-  cursor: pointer;
-}
-.link-controls button:disabled { background: #6c757d; }
-
-.link-list { display: flex; flex-direction: column; gap: 6px; }
-.link-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #e9ecef;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-}
-.link-item button {
-  background: transparent;
-  border: none;
-  color: #dc3545;
-  font-size: 16px;
-  cursor: pointer;
-}
