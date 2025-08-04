@@ -92,8 +92,8 @@ function FlowEditor() {
 
     // شناسه داکیومنتی که داده‌ها در آن ذخیره می‌شود
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    // Path for public and shared data storage
-    const docRef = doc(db, `artifacts/${appId}/public/graphs/graphData`);
+    // --- مسیر صحیح برای داده های عمومی ---
+    const docRef = doc(db, `artifacts/${appId}/public/graphData`);
 
     const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
@@ -123,7 +123,8 @@ function FlowEditor() {
     setIsSaving(true);
     try {
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const docRef = doc(db, `artifacts/${appId}/public/graphs/graphData`);
+      // --- مسیر صحیح برای داده های عمومی ---
+      const docRef = doc(db, `artifacts/${appId}/public/graphData`);
       const flowData = { nodes, edges };
       await setDoc(docRef, flowData);
       console.log("Graph saved to Firestore!");
