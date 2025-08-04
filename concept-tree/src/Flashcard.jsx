@@ -4,10 +4,16 @@ import React, { useState, useMemo } from "react";
 export default function Flashcard({ data, onChange, onClose, allNodes, currentNodeId, onNavigateToArticle, onCreateArticle }) {
   const [label, setLabel] = useState(data.label || "");
   const [descriptions, setDescriptions] = useState(data.descriptions || []);
-  // ... (سایر state ها مثل قبل باقی می‌مانند)
+  const [linkedNodes, setLinkedNodes] = useState(data.linkedNodes || []);
+  const [linkTarget, setLinkTarget] = useState("");
 
   const handleDataChange = (newData) => {
-    onChange({ label, descriptions, linkedNodes: data.linkedNodes, ...newData });
+    onChange({
+      label,
+      descriptions,
+      linkedNodes,
+      ...newData,
+    });
   };
 
   const handleLabelChange = (e) => {
@@ -22,7 +28,7 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
   };
 
   const addDescription = () => {
-    const newDescriptions = [...descriptions, { id: Date.now(), text: '', link: null }]; // link is now articleId
+    const newDescriptions = [...descriptions, { id: Date.now(), text: '', link: null }];
     setDescriptions(newDescriptions);
     handleDataChange({ descriptions: newDescriptions });
   };
@@ -33,25 +39,22 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
     handleDataChange({ descriptions: newDescriptions });
   };
   
-  // تابع جدید برای مدیریت لینک مقاله
   const handleArticleLink = async (descId) => {
     const desc = descriptions.find(d => d.id === descId);
     if (desc.link) {
-      // اگر لینک (articleId) وجود داشت، به آن صفحه برو
       onNavigateToArticle(desc.link);
     } else {
-      // اگر وجود نداشت، یک مقاله جدید بساز
       const newArticleId = await onCreateArticle();
       if (newArticleId) {
-        // شناسه مقاله جدید را در توضیحات ذخیره کن
         handleDescriptionChange(descId, 'link', newArticleId);
-        // و به صفحه آن برو
         onNavigateToArticle(newArticleId);
       }
     }
   };
 
-  // ... (بقیه توابع مثل قبل)
+  const getNodeLabel = (nodeId) => allNodes.find(n => n.id === nodeId)?.data.label || `گره ${nodeId}`;
+
+  // بقیه توابع لینک به گره دیگر مثل قبل هستند و نیازی به تغییر ندارند
 
   return (
     <div className="flashcard-container">
@@ -62,7 +65,7 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
 
       <div className="flashcard-section">
         <label>نام گره</label>
-        <input value={label} onChange={handleLabelChange} />
+        <input value={label} onChange={handleLabelChange} placeholder="نام گره را وارد کنید" />
       </div>
 
       <div className="flashcard-section">
@@ -73,19 +76,20 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
               value={desc.text}
               onChange={(e) => handleDescriptionChange(desc.id, 'text', e.target.value)}
               placeholder={`توضیحات ${index + 1}`}
+              rows={3}
             />
-            {/* دکمه جدید برای مدیریت مقاله */}
             <div className="description-toolbar">
                 <button className="article-link-button" onClick={() => handleArticleLink(desc.id)}>
-                  {desc.link ? 'مشاهده/ویرایش مقاله' : 'ایجاد مقاله مرجع'}
+                  {desc.link ? 'مشاهده / ویرایش مقاله مرجع' : 'ایجاد مقاله مرجع'}
                 </button>
-                <button onClick={() => removeDescription(desc.id)} className="remove-desc-button">حذف</button>
+                <button onClick={() => removeDescription(desc.id)} className="remove-desc-button" title="حذف این توضیحات">✕</button>
             </div>
           </div>
         ))}
-        <button onClick={addDescription} className="add-desc-button">افزودن توضیحات</button>
+        <button onClick={addDescription} className="add-desc-button">+ افزودن توضیحات</button>
       </div>
-      {/* بخش لینک به گره دیگر بدون تغییر باقی می‌ماند */}
+      
+      {/* بخش لینک به گره دیگر */}
     </div>
   );
 }

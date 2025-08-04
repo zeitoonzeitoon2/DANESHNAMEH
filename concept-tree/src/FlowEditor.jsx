@@ -9,14 +9,16 @@ import ReactFlow, {
   Background,
 } from "reactflow";
 import { setDoc } from "firebase/firestore";
+import { graphDocRef } from "./firebase";
 import CustomNode from "./CustomNode";
 import Flashcard from "./Flashcard";
 
+// ثبت کردن نوع گره سفارشی - این مرحله بسیار مهم است
 const nodeTypes = { custom: CustomNode };
 
-function FlowEditor({ initialNodes, initialEdges, onNavigateToArticle, onCreateArticle, graphDocRef }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+function FlowEditor({ initialGraphData, onNavigateToArticle, onCreateArticle }) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialGraphData.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraphData.edges);
   const [selectedNode, setSelectedNode] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -24,36 +26,44 @@ function FlowEditor({ initialNodes, initialEdges, onNavigateToArticle, onCreateA
     setIsSaving(true);
     try {
       await setDoc(graphDocRef, { nodes, edges });
-      console.log("Graph saved!");
+      alert("نمودار با موفقیت ذخیره شد!");
     } catch (error) {
       console.error("Error saving graph: ", error);
+      alert("خطا در ذخیره‌سازی نمودار!");
     } finally {
       setIsSaving(false);
     }
-  }, [nodes, edges, graphDocRef]);
+  }, [nodes, edges]);
 
   const onNodeClick = useCallback((_, node) => setSelectedNode(node), []);
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)), [setEdges]);
+  
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge({ ...params, animated: true, type: 'smoothstep' }, eds)),
+    [setEdges]
+  );
 
   const updateNodeData = useCallback((id, newData) => {
-    setNodes((nds) => nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...newData } } : n)));
+    const newNodes = nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...newData } } : n));
+    setNodes(newNodes);
     setSelectedNode((prev) => (prev && prev.id === id ? { ...prev, data: { ...prev.data, ...newData } } : prev));
-  }, [setNodes]);
+  }, [nodes, setNodes]);
 
   const addNode = useCallback(() => {
     const id = String(Date.now());
     setNodes((nds) => [
       ...nds,
       {
-        id, type: 'custom', position: { x: Math.random() * 400, y: Math.random() * 300 },
+        id,
+        type: 'custom',
+        position: { x: Math.random() * 200 + 50, y: Math.random() * 200 + 50 },
         data: { label: "گره جدید", descriptions: [], linkedNodes: [] },
       },
     ]);
   }, [setNodes]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div className="flow-editor-container">
       <div className="top-bar-controls">
         <button onClick={addNode} className="control-button add-node">افزودن گره</button>
         <button onClick={handleSave} className="control-button save" disabled={isSaving}>
@@ -68,12 +78,13 @@ function FlowEditor({ initialNodes, initialEdges, onNavigateToArticle, onCreateA
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
-        nodeTypes={nodeTypes}
+        nodeTypes={nodeTypes} // ثبت نوع گره
         fitView
+        className="react-flow-canvas"
       >
         <Controls />
         <MiniMap />
-        <Background />
+        <Background variant="dots" gap={12} size={1} />
       </ReactFlow>
       {selectedNode && (
         <div className="flashcard-panel">
