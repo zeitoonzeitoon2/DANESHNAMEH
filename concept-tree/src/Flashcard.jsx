@@ -1,7 +1,7 @@
 // src/Flashcard.jsx
 import React, { useState, useMemo } from "react";
 
-export default function Flashcard({ data, onChange, onClose, allNodes, currentNodeId, onNavigateToArticle, onCreateArticle }) {
+export default function Flashcard({ data, onChange, onClose, allNodes, currentNodeId }) {
   const [label, setLabel] = useState(data.label || "");
   const [descriptions, setDescriptions] = useState(data.descriptions || []);
   const [linkedNodes, setLinkedNodes] = useState(data.linkedNodes || []);
@@ -20,15 +20,17 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
     setLabel(e.target.value);
     handleDataChange({ label: e.target.value });
   };
-  
+
   const handleDescriptionChange = (id, field, value) => {
-    const newDescriptions = descriptions.map(desc => desc.id === id ? { ...desc, [field]: value } : desc);
+    const newDescriptions = descriptions.map(desc => 
+      desc.id === id ? { ...desc, [field]: value } : desc
+    );
     setDescriptions(newDescriptions);
     handleDataChange({ descriptions: newDescriptions });
   };
 
   const addDescription = () => {
-    const newDescriptions = [...descriptions, { id: Date.now(), text: '', link: null }];
+    const newDescriptions = [...descriptions, { id: Date.now(), text: '', link: '' }];
     setDescriptions(newDescriptions);
     handleDataChange({ descriptions: newDescriptions });
   };
@@ -38,23 +40,28 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
     setDescriptions(newDescriptions);
     handleDataChange({ descriptions: newDescriptions });
   };
-  
-  const handleArticleLink = async (descId) => {
-    const desc = descriptions.find(d => d.id === descId);
-    if (desc.link) {
-      onNavigateToArticle(desc.link);
-    } else {
-      const newArticleId = await onCreateArticle();
-      if (newArticleId) {
-        handleDescriptionChange(descId, 'link', newArticleId);
-        onNavigateToArticle(newArticleId);
-      }
+
+  const linkOptions = useMemo(() => {
+    const existingLinks = new Set(linkedNodes);
+    return allNodes.filter(node => node.id !== currentNodeId && !existingLinks.has(node.id));
+  }, [allNodes, currentNodeId, linkedNodes]);
+
+  const handleAddLink = () => {
+    if (linkTarget && !linkedNodes.includes(linkTarget)) {
+      const newLinkedNodes = [...linkedNodes, linkTarget];
+      setLinkedNodes(newLinkedNodes);
+      handleDataChange({ linkedNodes: newLinkedNodes });
+      setLinkTarget("");
     }
   };
 
-  const getNodeLabel = (nodeId) => allNodes.find(n => n.id === nodeId)?.data.label || `گره ${nodeId}`;
+  const handleRemoveLink = (nodeIdToRemove) => {
+    const newLinkedNodes = linkedNodes.filter(id => id !== nodeIdToRemove);
+    setLinkedNodes(newLinkedNodes);
+    handleDataChange({ linkedNodes: newLinkedNodes });
+  };
 
-  // بقیه توابع لینک به گره دیگر مثل قبل هستند و نیازی به تغییر ندارند
+  const getNodeLabel = (nodeId) => allNodes.find(n => n.id === nodeId)?.data.label || `گره ${nodeId}`;
 
   return (
     <div className="flashcard-container">
@@ -76,20 +83,38 @@ export default function Flashcard({ data, onChange, onClose, allNodes, currentNo
               value={desc.text}
               onChange={(e) => handleDescriptionChange(desc.id, 'text', e.target.value)}
               placeholder={`توضیحات ${index + 1}`}
-              rows={3}
             />
-            <div className="description-toolbar">
-                <button className="article-link-button" onClick={() => handleArticleLink(desc.id)}>
-                  {desc.link ? 'مشاهده / ویرایش مقاله مرجع' : 'ایجاد مقاله مرجع'}
-                </button>
-                <button onClick={() => removeDescription(desc.id)} className="remove-desc-button" title="حذف این توضیحات">✕</button>
-            </div>
+            <input
+              value={desc.link}
+              onChange={(e) => handleDescriptionChange(desc.id, 'link', e.target.value)}
+              placeholder="لینک منبع (اختیاری)"
+            />
+            <button onClick={() => removeDescription(desc.id)} className="remove-desc-button">حذف</button>
           </div>
         ))}
-        <button onClick={addDescription} className="add-desc-button">+ افزودن توضیحات</button>
+        <button onClick={addDescription} className="add-desc-button">افزودن توضیحات</button>
       </div>
-      
-      {/* بخش لینک به گره دیگر */}
+
+      <div className="flashcard-section">
+        <label>لینک به گره دیگر</label>
+        <div className="link-controls">
+          <select value={linkTarget} onChange={(e) => setLinkTarget(e.target.value)}>
+            <option value="">یک گره را انتخاب کنید...</option>
+            {linkOptions.map(node => (
+              <option key={node.id} value={node.id}>{node.data.label}</option>
+            ))}
+          </select>
+          <button onClick={handleAddLink} disabled={!linkTarget}>افزودن</button>
+        </div>
+        <div className="link-list">
+          {linkedNodes.map(nodeId => (
+            <div key={nodeId} className="link-item">
+              <span>{getNodeLabel(nodeId)}</span>
+              <button onClick={() => handleRemoveLink(nodeId)}>✕</button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

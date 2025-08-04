@@ -1,14 +1,12 @@
 /* src/styles.css */
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
-
 body {
   margin: 0;
-  font-family: 'Vazirmatn', sans-serif;
+  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   background: #f8f9fa;
   direction: rtl;
   color: #343a40;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .loading-screen {
@@ -18,12 +16,6 @@ body {
   height: 100vh;
   font-size: 1.5rem;
   color: #6c757d;
-}
-
-.flow-editor-container {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
 }
 
 .top-bar-controls {
@@ -36,64 +28,55 @@ body {
 }
 
 .control-button {
-  border: 1px solid transparent;
+  border: none;
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
-.control-button.add-node { background: #0d6efd; color: #fff; }
-.control-button.add-node:hover { background: #0b5ed7; }
-.control-button.save { background: #198754; color: #fff; }
-.control-button.save:hover { background: #157347; }
-.control-button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.react-flow-canvas {
-  background-color: #f8f9fa;
+.control-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
+
+.control-button.add-node { background: #007bff; color: #fff; }
+.control-button.save { background: #28a745; color: #fff; }
 
 /* --- Custom Node Styles --- */
 .react-flow__node-custom {
-  background: #ffffff;
-  border: 1px solid #dee2e6;
+  background: #fff;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   font-size: 14px;
   text-align: center;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  min-width: 150px;
-}
-
-.react-flow__handle {
-  width: 8px;
-  height: 8px;
-  background: #6c757d !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-width: 120px;
 }
 
 /* --- Flashcard Panel --- */
 .flashcard-panel {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 340px;
-  height: 100%;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+  width: 320px;
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
   background: #fff;
-  box-shadow: -2px 0 15px rgba(0,0,0,0.1);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease-in-out;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .flashcard-container {
-  padding: 20px;
-  overflow-y: auto;
-  flex-grow: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .flashcard-header {
@@ -102,9 +85,9 @@ body {
   align-items: center;
   font-weight: 600;
   font-size: 1.1rem;
-  padding-bottom: 12px;
+  color: #212529;
+  padding-bottom: 10px;
   border-bottom: 1px solid #e9ecef;
-  margin-bottom: 20px;
 }
 
 .flashcard-close-button {
@@ -122,30 +105,31 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 24px;
 }
 
 .flashcard-section label {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
   color: #495057;
 }
 
 .flashcard-section input,
-.flashcard-section textarea {
+.flashcard-section textarea,
+.flashcard-section select {
   font-family: inherit;
   font-size: 14px;
   border: 1px solid #ced4da;
-  padding: 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
 }
 .flashcard-section input:focus,
-.flashcard-section textarea:focus {
+.flashcard-section textarea:focus,
+.flashcard-section select:focus {
   outline: none;
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
 .description-block {
@@ -156,34 +140,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
 }
-
-.description-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.article-link-button {
-  background: none;
-  border: none;
-  color: #0d6efd;
-  cursor: pointer;
-  padding: 0;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-.article-link-button:hover { text-decoration: underline; }
 
 .remove-desc-button {
-  background: transparent;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #dc3545;
+  color: white;
   border: none;
-  color: #dc3545;
-  font-size: 1.2rem;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 8px;
   cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
 }
 
 .add-desc-button {
@@ -193,62 +163,34 @@ body {
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
-  text-align: center;
-  font-weight: 500;
 }
 
-/* --- Article Page Styles --- */
-.article-page-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  box-sizing: border-box;
+.link-controls { display: flex; gap: 8px; }
+.link-controls select { flex-grow: 1; }
+.link-controls button {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0 12px;
+  cursor: pointer;
 }
+.link-controls button:disabled { background: #6c757d; }
 
-.article-toolbar {
+.link-list { display: flex; flex-direction: column; gap: 6px; }
+.link-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
+  background: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
 }
-
-.article-toolbar button {
-  background: #0d6efd;
-  color: white;
+.link-item button {
+  background: transparent;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  color: #dc3545;
+  font-size: 16px;
   cursor: pointer;
-  margin-left: 10px;
-  font-family: inherit;
 }
-
-.article-toolbar button:first-child {
-  background: #6c757d;
-}
-
-.article-content {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  min-height: 50vh;
-}
-
-.article-editor {
-  width: 100%;
-  height: 60vh;
-  border: none;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.7;
-}
-.article-editor:focus { outline: none; }
-
-.markdown-preview { line-height: 1.7; }
-.markdown-preview h1, .markdown-preview h2 { border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
-.markdown-preview a { color: #0d6efd; }

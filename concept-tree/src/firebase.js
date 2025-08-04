@@ -1,21 +1,29 @@
 // src/firebase.js
+
+// Firebase SDK را برای برنامه وب اولیه سازی می کند
 import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, collection } from "firebase/firestore";
+// Firestore Database و Authentication را ایمپورت می کند.
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
 
-// این متغیرها به صورت گلوبال از محیط Canvas تامین می شوند.
-// استفاده از مقادیر سخت‌کد شده ممکن است در این محیط باعث بروز مشکل شود.
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+// اطلاعات پیکربندی پروژه Firebase شما.
+// این اطلاعات را از کنسول Firebase خود کپی کنید.
+// توجه: این مقادیر باید با مقادیر واقعی پروژه شما جایگزین شوند.
+const firebaseConfig = {
+  apiKey: "AIzaSyA3uKmbMsC1q8q52mxVOujFg8bl-jtuspc",
+  authDomain: "daneshnamehapp-b9685.firebaseapp.com",
+  projectId: "daneshnamehapp-b9685",
+  storageBucket: "daneshnamehapp-b9685.firebasestorage.app",
+  messagingSenderId: "865618306278",
+  appId: "1:865618306278:web:32bc6dd2cb7c1323664727"
+};
 
-// Initialize Firebase
+// برنامه Firebase را با اطلاعات پیکربندی شما اولیه سازی می کند.
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+// سرویس های Firestore Database و Authentication را دریافت می کند.
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-// Public data references
-// اینجا متغیرهای graphDocRef و articlesCollectionRef را به درستی export می کنیم.
-export const graphDocRef = doc(db, `artifacts/${appId}/public/graphData`);
-export const articlesCollectionRef = collection(db, `artifacts/${appId}/public/articles`);
+// سرویس های 'db' و 'auth' را برای استفاده در سایر فایل ها export می کند.
+export { db, auth };
