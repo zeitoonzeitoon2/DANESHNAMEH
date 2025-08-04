@@ -12,6 +12,7 @@ import ReactFlow, {
   Background,
 } from "reactflow";
 import { onSnapshot, doc, setDoc } from "firebase/firestore";
+import { signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 import "reactflow/dist/style.css";
 import Flashcard from "./Flashcard";
@@ -20,9 +21,7 @@ import "./styles.css";
 
 // --- Firebase Initialization ---
 // db و auth را از فایل پیکربندی Firebase ایمپورت می کنیم.
-// تمام مراحل اولیه سازی در آن فایل انجام شده است.
 import { db, auth } from './firebase';
-import { signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 
 // تعریف نوع گره سفارشی
@@ -89,12 +88,12 @@ function FlowEditor() {
 
   // 2. Fetch data from Firestore after authentication is ready
   useEffect(() => {
-    if (!isAuthReady || !userId) return;
+    if (!isAuthReady) return;
 
     // شناسه داکیومنتی که داده‌ها در آن ذخیره می‌شود
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    // Path for multi-user data storage
-    const docRef = doc(db, `artifacts/${appId}/users/${userId}/graphs/graphData`);
+    // Path for public and shared data storage
+    const docRef = doc(db, `artifacts/${appId}/public/graphs/graphData`);
 
     const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
@@ -113,10 +112,10 @@ function FlowEditor() {
 
     // پاکسازی شنود هنگام خروج از کامپوننت
     return () => unsubscribeSnapshot();
-  }, [isAuthReady, userId, setNodes, setEdges]);
+  }, [isAuthReady, setNodes, setEdges]);
 
   const handleSave = useCallback(async () => {
-    if (!isAuthReady || !userId) {
+    if (!isAuthReady) {
       console.error("Firebase is not ready. Cannot save.");
       return;
     }
@@ -124,7 +123,7 @@ function FlowEditor() {
     setIsSaving(true);
     try {
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const docRef = doc(db, `artifacts/${appId}/users/${userId}/graphs/graphData`);
+      const docRef = doc(db, `artifacts/${appId}/public/graphs/graphData`);
       const flowData = { nodes, edges };
       await setDoc(docRef, flowData);
       console.log("Graph saved to Firestore!");
@@ -133,7 +132,7 @@ function FlowEditor() {
     } finally {
       setIsSaving(false);
     }
-  }, [nodes, edges, isAuthReady, userId]);
+  }, [nodes, edges, isAuthReady]);
 
   const onNodeClick = useCallback((event, node) => {
     setSelectedNode(node);
@@ -192,7 +191,7 @@ function FlowEditor() {
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange} // onEdgesState را به onEdgesChange تغییر دادم
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
